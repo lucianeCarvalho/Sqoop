@@ -1,0 +1,109 @@
+
+#Mysql >> To see hostname
+select @@hostname;
+show variables where Variable_name like '%host%';
+# OR
+show variables where Variable_name='hostname';
+# To see port 
+SHOW VARIABLES WHERE Variable_name = 'port';
+
+#sqoop import --driver com.mysql.jdbc.Driver \
+# Comand to list all DataBases in My Database
+#Listar todos os databases contidos no mysql usando sqoop
+sqoop-list-databases \
+--connect "jdbc:mysql://quickstart.cloudera:3306" \
+--connection-manager org.apache.sqoop.manager.MySQLManager \
+--username root \
+--password cloudera \
+
+#Listar as tabelas de determinado database
+sqoop-list-tables \
+--connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \
+--username root \
+password cloudera \
+
+#Validando uma conection sqlsqoop eval \
+# Comando utilizado para testar as consultas sql acessando direto o database
+--connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \
+--username root \
+--password cloudera \
+--query "select count(1) from order_items"
+
+#Testando SQL sem acessar diretamente o database na connetion
+sqoop eval \
+--connect "jdbc:mysql://quickstart.cloudera:3306" \
+--username root \
+--password cloudera \
+--query "select * from retail_db.order_items LIMIT 10"
+# Importando todas as tabelas de um banco utilizando mais de um mappers (--m)
+sqoop import-all-tables \
+--connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \
+--username root \
+--password cloudera \
+--as-sequencefile \
+--num-mappers 3
+--warehouse-dir /user/cloudera/sqoop_import/ratail_db \
+#--fields-terminated-by ';'
+
+# Impotando Tabela por default o sqoop use 4 mappers in paralelo (--num-mappers or -m)
+sqoop import -driver com.mysql.jdbc.Driver \
+-connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \
+-username root \
+-password cloudera \
+-table customers 
+-target-dir /user/cloudera/sqoop_import \
+-m 4 \
+-as-textfile
+
+#Importando tabela com uma condição específica
+sqoop import --driver com.mysql.jdbc.Driver \
+--connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \
+--username root \
+--password cloudera \
+--table customers \
+--target-dir /user/cloudera/sqoop_import \
+--num-mappers 2 \ # or -m
+--as-textfile \
+--where #To Do escrever a condição
+
+#Importando usando sql (-e,--query)
+sqoop import --driver com.mysql.jdbc.Driver \
+--connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \
+--username root \
+--password cloudera \
+--table customers \
+--target-dir /user/cloudera/sqoop_import \
+-e "select * from customers where #ToDo escrever condicao#"
+--num-mappers 1
+--as-textfile
+
+#Importando por usando o split (para melhorar a performance (like indice))
+sqoop import \
+--connect "jdbc:mysql://quickstart.cloudera:3306/retail_db" \
+--username root \
+--password cloudera \
+--table customers
+--target-dir /username/cloudera/sqoop_import \
+--num-mappers 6
+--as-textfile
+--split-by #Todo colocar coluna da tabela desejada
+
+#Verificar lista de jobs sqoop
+sqoop job -list
+
+#Exportar dados do hadoop
+sqoop export \ 
+--connect "jdbc:mysql:quickstart.cloudera:3306/retail_db" \
+--username root \
+--password cloudera \
+--table #name
+--export-dir #Todo /local/hadoop/
+--input-filds-terminated-by '\001'
+  
+
+##### USANDO Arquivos para executar sqoop
+sqoop --options-file /users/homer/work/import.txt --table customers
+
+
+
+
